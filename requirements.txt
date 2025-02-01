@@ -1,9 +1,10 @@
 fastapi
 uvicorn
 pymongo
-pydantic
+pydantic[email]
 httpx
 python-dotenv
 bcrypt
 passlib
 flask-cors
+email-validator
