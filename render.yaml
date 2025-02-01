@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port 10000"
+    startCommand: "PYTHONPATH=./fintech-backend uvicorn src.main:app --host 0.0.0.0 --port 10000"
     envVars:
       - key: MONGO_URI
         value: "mongodb+srv://uthmanunique:00wPSfLqT6LXda0b@cluster0.mongodb.net/greenwallet?retryWrites=true&w=majority"
