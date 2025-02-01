@@ -1,0 +1,9 @@
+FastAPI
+uvicorn
+pymongo
+pydantic
+httpx
+python-dotenv
+bcrypt
+passlib
+flask-cors
