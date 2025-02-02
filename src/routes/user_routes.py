@@ -36,9 +36,12 @@
 
 
 # filepath: /c:/Users/Baloun Uthman/Desktop/Greenwallet-backend/src/routes/user_routes.py
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import OAuth2PasswordBearer
 from src.controllers.user_controller import UserController
 from src.schemas.user_schemas import UserRegister, UserLogin, VerifyOTP, UserProfileUpdate, SetPIN
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 router = APIRouter()
 user_controller = UserController()
@@ -56,9 +59,11 @@ async def verify_otp(data: VerifyOTP):
     return user_controller.verify_otp(data)
 
 @router.put("/update-profile/{email}")
-async def update_profile(email: str, profile_data: UserProfileUpdate):
+async def update_profile(email: str, profile_data: UserProfileUpdate, token: str = Depends(oauth2_scheme)):
+    user_controller.user_service.verify_access_token(token)
     return user_controller.update_profile(email, profile_data)
 
 @router.post("/set-pin")
-async def set_pin(data: SetPIN):
+async def set_pin(data: SetPIN, token: str = Depends(oauth2_scheme)):
+    user_controller.user_service.verify_access_token(token)
     return user_controller.set_pin(data)
