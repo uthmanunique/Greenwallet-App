@@ -34,11 +34,31 @@
 #         raise HTTPException(status_code=400, detail="KYC verification failed")
 #     return {"detail": "KYC verification successful"}
 
-# filepath: fintech-backend/src/routes/user_routes.py
-from fastapi import APIRouter
+
+# filepath: /c:/Users/Baloun Uthman/Desktop/Greenwallet-backend/src/routes/user_routes.py
+from fastapi import APIRouter, HTTPException
+from src.controllers.user_controller import UserController
+from src.schemas.user_schemas import UserRegister, UserLogin, VerifyOTP, UserProfileUpdate, SetPIN
 
 router = APIRouter()
+user_controller = UserController()
 
-@router.get("/")
-async def get_users():
-    return [{"username": "ademola"}, {"username": "balogun"}]
+@router.post("/register")
+async def register_user(user: UserRegister):
+    return user_controller.register_user(user)
+
+@router.post("/login")
+async def login_user(user: UserLogin):
+    return user_controller.login_user(user)
+
+@router.post("/verify-otp")
+async def verify_otp(data: VerifyOTP):
+    return user_controller.verify_otp(data)
+
+@router.put("/update-profile/{email}")
+async def update_profile(email: str, profile_data: UserProfileUpdate):
+    return user_controller.update_profile(email, profile_data)
+
+@router.post("/set-pin")
+async def set_pin(data: SetPIN):
+    return user_controller.set_pin(data)

@@ -25,7 +25,7 @@
 #     return {"message": "Welcome to the Green Wallet API"}
 
 
-# filepath: fintech-backend/src/main.py
+# filepath: /c:/Users/Baloun Uthman/Desktop/Greenwallet-backend/src/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.routes.user_routes import router as user_router
