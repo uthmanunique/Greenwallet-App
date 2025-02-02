@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from passlib.context import CryptContext
 from fastapi import HTTPException
+from src.database import db
 
 SECRET_KEY = "your_secret_key"
 ALGORITHM = "HS256"
@@ -20,8 +21,12 @@ logger = logging.getLogger(__name__)
 
 class UserService:
     def get_users(self):
-        # Mocked data instead of database interaction
-        return [{"username": "ademola"}, {"username": "balogun"}]
+        try:
+            users = db.users.find()
+            return [{"username": user["username"]} for user in users]
+        except Exception as e:
+            logger.error(f"Error in get_users: {e}")
+            raise HTTPException(status_code=500, detail="Internal Server Error")
 
     def register_user(self, user):
         try:
@@ -33,8 +38,7 @@ class UserService:
                 "phone_number": user.phone_number,
                 "password": hashed_password
             }
-            # Mocked database insertion
-            # db.users.insert_one(user_data)
+            db.users.insert_one(user_data)
             otp = self.send_otp(user.email)
             access_token = self.create_access_token(data={"sub": user.email})
             return {"message": "User registered successfully. Please verify your email.", "otp": otp, "access_token": access_token}
@@ -44,8 +48,7 @@ class UserService:
 
     def login_user(self, user):
         try:
-            # Mocked database lookup
-            db_user = {"email": "testuser@example.com", "password": pwd_context.hash("testpassword")}
+            db_user = db.users.find_one({"email": user.email})
             if not db_user or not pwd_context.verify(user.password, db_user["password"]):
                 raise HTTPException(status_code=400, detail="Invalid email or password")
             access_token = self.create_access_token(data={"sub": user.email})
@@ -65,7 +68,7 @@ class UserService:
             msg.attach(MIMEText(body, 'plain'))
             server = smtplib.SMTP('smtp.gmail.com', 587)
             server.starttls()
-            server.login('your-email@gmail.com', 'your-email-password')
+            server.login('uthmanunique@gmail.com', 'fdxqppcvildhvdzg')  # Use your app password here if 2FA is enabled
             text = msg.as_string()
             server.sendmail('your-email@gmail.com', email, text)
             server.quit()
@@ -87,8 +90,7 @@ class UserService:
 
     def update_profile(self, email, profile_data):
         try:
-            # Mocked database update
-            # db.users.update_one({"email": email}, {"$set": profile_data})
+            db.users.update_one({"email": email}, {"$set": profile_data})
             return {"message": "Profile updated successfully"}
         except Exception as e:
             logger.error(f"Error in update_profile: {e}")
@@ -97,8 +99,7 @@ class UserService:
     def set_pin(self, email, pin):
         try:
             hashed_pin = pwd_context.hash(pin)
-            # Mocked database update
-            # db.users.update_one({"email": email}, {"$set": {"pin": hashed_pin}})
+            db.users.update_one({"email": email}, {"$set": {"pin": hashed_pin}})
             return {"message": "PIN set successfully"}
         except Exception as e:
             logger.error(f"Error in set_pin: {e}")
