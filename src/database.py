@@ -1,14 +1,13 @@
-# filepath: /c:/Users/Baloun Uthman/Desktop/Greenwallet-backend/src/database.py
-from pymongo import MongoClient
-from pymongo.errors import ServerSelectionTimeoutError
+# src/database.py
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
 
+# MongoDB URI from environment variables (make sure .env is properly configured or hardcode)
 MONGO_URI = "mongodb+srv://uthmanunique:0Z3OgarH9fcPbsKy@greenwallet.zvuzd.mongodb.net/"
 
-try:
-    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-    db = client["greenwallet_db"]
-    # Attempt to retrieve server information to trigger a connection error if the connection fails
-    client.server_info()
-    print("Connected to MongoDB")
-except ServerSelectionTimeoutError as e:
-    print(f"Error connecting to MongoDB: {e}")
+client = AsyncIOMotorClient(MONGO_URI)
+db = client["greenwallet_db"]
+
+# Export the 'users' collection to be used in services
+users_collection = db["users"]  # This defines the collection name 'users'
+

@@ -1,13 +1,21 @@
 # filepath: /c:/Users/Baloun Uthman/Desktop/Greenwallet-backend/src/schemas/user_schemas.py
 from pydantic import BaseModel
 from fastapi import Form, File, UploadFile
+from pydantic import BaseModel, EmailStr
+
 
 class UserRegister(BaseModel):
     first_name: str
     last_name: str
-    email: str
+    email: EmailStr  # ✅ Ensures a valid email format
     phone_number: str
     password: str
+
+class UserRegisterResponse(BaseModel):
+    message: str
+    otp: int  # The OTP code
+    access_token: str
+    token_type: str
 
     @classmethod
     def as_form(
@@ -94,3 +102,4 @@ class SetPIN(BaseModel):
         pin: str = Form(...)
     ):
         return cls(email=email, pin=pin)
+
