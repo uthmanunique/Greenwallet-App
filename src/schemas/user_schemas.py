@@ -7,62 +7,35 @@ from pydantic import BaseModel, EmailStr
 class UserRegister(BaseModel):
     first_name: str
     last_name: str
-    email: EmailStr  # ✅ Ensures a valid email format
+    email: EmailStr
     phone_number: str
     password: str
 
 class UserRegisterResponse(BaseModel):
     message: str
-    otp: int  # The OTP code
+    otp: int
     access_token: str
     token_type: str
-
-    @classmethod
-    def as_form(
-        cls,
-        first_name: str = Form(...),
-        last_name: str = Form(...),
-        email: str = Form(...),
-        phone_number: str = Form(...),
-        password: str = Form(...)
-    ):
-        return cls(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, password=password)
 
 class UserLogin(BaseModel):
     email: str
     password: str
 
-    @classmethod
-    def as_form(
-        cls,
-        email: str = Form(...),
-        password: str = Form(...)
-    ):
-        return cls(email=email, password=password)
-
 class VerifyOTP(BaseModel):
     email: str
     otp: int
 
-    @classmethod
-    def as_form(
-        cls,
-        email: str = Form(...),
-        otp: int = Form(...)
-    ):
-        return cls(email=email, otp=otp)
-
+# New schema for updating profile (profile update fields only)
 class UserProfileUpdate(BaseModel):
     home_address: str
     country: str
     state: str
     city: str
-    utility_bill: UploadFile
+    # For simplicity, we assume the utility bill is sent as a string (e.g., a URL)
+    utility_bill: str
     date_of_birth: str
     gender: str
     occupation: str
-    identity_verification: UploadFile
-    document_type: str
 
     @classmethod
     def as_form(
@@ -71,12 +44,10 @@ class UserProfileUpdate(BaseModel):
         country: str = Form(...),
         state: str = Form(...),
         city: str = Form(...),
-        utility_bill: UploadFile = File(...),
+        utility_bill: str = Form(...),
         date_of_birth: str = Form(...),
         gender: str = Form(...),
-        occupation: str = Form(...),
-        identity_verification: UploadFile = File(...),
-        document_type: str = Form(...)
+        occupation: str = Form(...)
     ):
         return cls(
             home_address=home_address,
@@ -86,14 +57,40 @@ class UserProfileUpdate(BaseModel):
             utility_bill=utility_bill,
             date_of_birth=date_of_birth,
             gender=gender,
-            occupation=occupation,
-            identity_verification=identity_verification,
+            occupation=occupation
+        )
+
+# New schema for identity verification
+class IdentityVerification(BaseModel):
+    # For simplicity, we expect the client to send file URLs or base64 strings.
+    # In a real application, you would handle file uploads and store them.
+    id_document: str  # URL or file path of the ID document
+    selfie: str       # URL or file path of the selfie
+    document_type: str
+
+    @classmethod
+    def as_form(
+        cls,
+        id_document: str = Form(...),
+        selfie: str = Form(...),
+        document_type: str = Form(...)
+    ):
+        return cls(
+            id_document=id_document,
+            selfie=selfie,
             document_type=document_type
         )
 
+# Existing SetPIN schema
 class SetPIN(BaseModel):
-    email: str
     pin: str
+
+    @classmethod
+    def as_form(
+        cls,
+        pin: str = Form(...)
+    ):
+        return cls(pin=pin)
 
     @classmethod
     def as_form(
@@ -102,4 +99,3 @@ class SetPIN(BaseModel):
         pin: str = Form(...)
     ):
         return cls(email=email, pin=pin)
-

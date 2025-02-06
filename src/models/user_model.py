@@ -1,26 +1,3 @@
-# from pydantic import BaseModel, EmailStr
-# from bson import ObjectId
-# from typing import Optional
-# from datetime import datetime
-
-# class User(BaseModel):
-#     id: Optional[str] = None
-#     email: EmailStr
-#     password: str
-#     full_name: str
-#     phone_number: str
-#     created_at: datetime = datetime.utcnow()
-#     updated_at: datetime = datetime.utcnow()
-#     is_verified: bool = False
-
-#     class Config:
-#         json_encoders = {
-#             ObjectId: str
-#         }
-
-#     def update(self, **kwargs):
-#         for key, value in kwargs.items():
-#             setattr(self, key, value)
 
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
@@ -35,3 +12,18 @@ class UserModel(BaseModel):
     is_verified: bool = False
     otp: Optional[str] = None  # OTP for email verification
     pin: Optional[str] = None  # For transactions
+
+# New fields for profile update
+    home_address: Optional[str] = None
+    country: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    utility_bill: Optional[str] = None  # You might store a URL or file path
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
+    occupation: Optional[str] = None
+
+    # New fields for identity verification
+    id_document: Optional[str] = None  # URL or file path for ID document
+    selfie: Optional[str] = None         # URL or file path for selfie
+    kyc_verified: bool = False           # Whether KYC has been completed

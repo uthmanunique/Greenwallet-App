@@ -1,264 +1,4 @@
 # # filepath: /c:/Users/Baloun Uthman/Desktop/Greenwallet-backend/src/schemas/user_service.py
-
-# import smtplib
-# import random
-# import jwt
-# import logging
-# import os
-# from datetime import datetime, timedelta
-# from email.mime.text import MIMEText
-# from email.mime.multipart import MIMEMultipart
-# from passlib.context import CryptContext
-# from fastapi import HTTPException
-# from fastapi.responses import JSONResponse
-# from src.database import db
-# from src.schemas.user_schemas import UserRegister, UserRegisterResponse
-
-# # Load environment variables
-# SECRET_KEY = os.getenv('SECRET_KEY')
-# ALGORITHM = "HS256"
-# ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
-# EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
-# EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
-
-# if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
-#     raise ValueError("Missing EMAIL_ADDRESS or EMAIL_PASSWORD in environment variables!")
-
-# # ✅ Ensure MongoDB has the `otps` collection
-# if "otps" not in db.list_collection_names():
-#     db.create_collection("otps", capped=False)
-
-# # Use Argon2 for stronger password hashing
-# pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
-
-# # Logging setup
-# logging.basicConfig(level=logging.INFO)
-# logger = logging.getLogger(__name__)
-
-# class UserService:
-#     def send_otp(self, email):
-#         try:  # ✅ Fixed indentation
-#             otp = random.randint(100000, 999999)
-#             otp_data = {
-#                 "email": email,
-#                 "otp": otp,
-#                 "expires_at": datetime.utcnow() + timedelta(minutes=10)
-#             }
-#             db.otps.insert_one(otp_data)
-
-#             # ✅ Debugging: Print email and password before login
-#             print(f"DEBUG: Sending OTP to {email}")
-#             print(f"DEBUG: Using EMAIL_ADDRESS = {EMAIL_ADDRESS}")
-
-#             msg = MIMEMultipart()
-#             msg['From'] = EMAIL_ADDRESS
-#             msg['To'] = email
-#             msg['Subject'] = 'Your OTP Code'
-#             msg.attach(MIMEText(f'Your OTP code is {otp}', 'plain'))
-
-#             server = smtplib.SMTP('smtp.gmail.com', 587)
-#             server.starttls()
-
-#             # ✅ Debugging: Check if SMTP login is actually happening
-#             print("DEBUG: Logging into SMTP server...")
-#             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-#             print("DEBUG: SMTP login successful inside FastAPI!")
-
-#             server.sendmail(EMAIL_ADDRESS, email, msg.as_string())
-#             server.quit() 
-
-#             print("DEBUG: OTP email sent successfully!")
-#             return {"message": "OTP sent successfully"}
-#         except smtplib.SMTPException as e:
-#             logger.error(f"SMTP error in send_otp: {e}")
-#             raise HTTPException(status_code=500, detail="Email sending failed")
-#         except Exception as e:
-#             logger.error(f"Unexpected error in send_otp: {e}")
-#             raise HTTPException(status_code=500, detail="Internal Server Error")
-
-#     def register_user(self, user):
-#         """
-#         Registers a new user and sends an OTP for email verification.
-#         """
-#         try:
-#             existing_user = db.users.find_one({"email": user.email})
-#             if existing_user:
-#                 raise HTTPException(status_code=400, detail="User already exists")  # ✅ Fixed
-
-#             if not user.email or "@" not in user.email:  # ✅ Validate email format
-#                 raise HTTPException(status_code=400, detail="Invalid email format")
-
-#             hashed_password = pwd_context.hash(user.password)
-#             user_data = {
-#                 "first_name": user.first_name,
-#                 "last_name": user.last_name,
-#                 "email": user.email,
-#                 "phone_number": user.phone_number,
-#                 "password": hashed_password
-#             }
-#             db.users.insert_one(user_data)
-
-#                 # ✅ Generate OTP and Token
-#             otp_response = self.send_otp(user.email)  # Sending OTP
-#             access_token = self.create_access_token(data={"sub": user.email})  # Generating JWT
-
-            
-            
-#             return UserRegisterResponse(
-#                 message="User registered successfully. Please verify your email.",
-#                 otp=otp_response,  # ✅ OTP is returned
-#                 access_token=access_token,  # ✅ Token is returned
-#                 token_type="bearer"
-#             )
-        
-#         except Exception as e:
-#             logger.error(f"Error in register_user: {e}")
-#             raise HTTPException(status_code=500, detail="Internal Server Error")
-
-#     def verify_otp(self, email, otp):
-#         """
-#         Verifies OTP from MongoDB.
-#         """
-#         try:
-#             otp_entry = db.otps.find_one({"email": email}, sort=[("expires_at", -1)])
-#             if otp_entry and otp_entry["otp"] == otp and otp_entry["expires_at"] > datetime.utcnow():
-#                 return {"message": "OTP verified successfully"}
-#             else:
-#                 raise HTTPException(status_code=400, detail="Invalid or expired OTP")
-#         except Exception as e:
-#             logger.error(f"Error in verify_otp: {e}")
-#             raise HTTPException(status_code=500, detail="Internal Server Error")
-
-#     def verify_otp(self, email, otp):
-#         """
-#         Verifies OTP from MongoDB.
-#         """
-#         try:
-#             otp_entry = db.otps.find_one({"email": email}, sort=[("expires_at", -1)])
-#             if otp_entry and otp_entry["otp"] == otp and otp_entry["expires_at"] > datetime.utcnow():
-#                 return {"message": "OTP verified successfully"}
-#             else:
-#                 raise HTTPException(status_code=400, detail="Invalid or expired OTP")
-#         except Exception as e:
-#             logger.error(f"Error in verify_otp: {e}")
-#             raise HTTPException(status_code=500, detail="Internal Server Error")
-
-#     def register_user(self, user):
-#         """
-#         Registers a new user and sends an OTP for email verification.
-#         """
-#         try:
-#             existing_user = db.users.find_one({"email": user.email})
-#             if existing_user:
-#                 return {"message": "User already exists"}, 400  # ✅ Return 400 instead of crashing
-
-#             hashed_password = pwd_context.hash(user.password)
-#             user_data = {
-#                 "first_name": user.first_name,
-#                 "last_name": user.last_name,
-#                 "email": user.email,
-#                 "phone_number": user.phone_number,
-#                 "password": hashed_password
-#             }
-#             db.users.insert_one(user_data)
-
-#             # Send OTP for email verification
-#             self.send_otp(user.email)
-
-#             return {"message": "User registered successfully. Please verify your email."}
-#         except Exception as e:
-#             logger.error(f"Error in register_user: {e}")
-#             raise HTTPException(status_code=500, detail="Internal Server Error")
-
-#     def login_user(self, user: dict): # ✅ Fix: Accept dictionary properly
-#         """
-#         Authenticates a user and returns an access token as an HTTPOnly cookie.
-#         """
-#         try:
-#             email = user.get('email') # ✅ Fix: Use `.get()` to retrieve email
-#             password = user.get("password")  # ✅ Fix: Use `.get()` to retrieve password
-
-#             db_user = db.users.find_one({"email": user.email})
-#             if not db_user or not pwd_context.verify(user.password, db_user["password"]):
-#                 raise HTTPException(status_code=400, detail="Invalid email or password")
-
-#             access_token = self.create_access_token(data={"sub": user.email})
-
-#             # Return token in an HTTPOnly cookie
-#             # response = JSONResponse(content={"message": "User logged in successfully"})
-#             # response.set_cookie(
-#             #     key="access_token",
-#             #     value=f"Bearer {access_token}",
-#             #     httponly=True,
-#             #     secure=True,
-#             #     samesite="Lax"
-#             # ) 
-#             # return response
-
-#             return {
-#             "message": "User logged in successfully",
-#             "access_token": access_token,
-#             "token_type": "bearer"
-#         }
-#         except Exception as e:
-#             logger.error(f"Error in login_user: {e}")
-#             raise HTTPException(status_code=500, detail="Internal Server Error")
-
-#     def update_profile(self, email, profile_data):
-#         """
-#         Updates a user's profile.
-#         """
-#         try:
-#             db.users.update_one({"email": email}, {"$set": profile_data})
-#             return {"message": "Profile updated successfully"}
-#         except Exception as e:
-#             logger.error(f"Error in update_profile: {e}")
-#             raise HTTPException(status_code=500, detail="Internal Server Error")
-
-#     def set_pin(self, email, pin):
-#         """
-#         Sets a PIN for a user (hashed for security).
-#         """
-#         try:
-#             hashed_pin = pwd_context.hash(pin)
-#             db.users.update_one({"email": email}, {"$set": {"pin": hashed_pin}})
-#             return {"message": "PIN set successfully"}
-#         except Exception as e:
-#             logger.error(f"Error in set_pin: {e}")
-#             raise HTTPException(status_code=500, detail="Internal Server Error")
-
-#     def create_access_token(self, data: dict):
-#         """
-#         Generates a JWT access token.
-#         """
-#         try:
-#             to_encode = data.copy()
-#             expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-#             to_encode.update({"exp": expire})
-#             encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-#             return encoded_jwt
-#         except Exception as e:
-#             logger.error(f"Error in create_access_token: {e}")
-#             raise HTTPException(status_code=500, detail="Internal Server Error")
-
-#     def verify_access_token(self, token: str):
-#         """
-#         Verifies a JWT access token.
-#         """
-#         try:
-#             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#             email: str = payload.get("sub")
-#             if email is None:
-#                 raise HTTPException(status_code=401, detail="Invalid token: Missing email")
-#             return {"email": email}
-#         except jwt.ExpiredSignatureError:
-#             logger.error("Token has expired")
-#             raise HTTPException(status_code=401, detail="Token has expired. Please login again.")
-#         except jwt.InvalidTokenError:
-#             logger.error("Invalid token")
-#             raise HTTPException(status_code=401, detail="Invalid authentication token")
-
-# src/services/user_service.py
 from passlib.context import CryptContext
 from ..models.user_response_model import UserResponseModel
 from ..schemas.user_schemas import UserRegisterResponse
@@ -362,3 +102,43 @@ async def verify_user_credentials(email: str, password: str) -> str:
         token = create_jwt_token(email)
         return token
     return None
+
+# New function: Update Profile
+async def update_profile(user_email: str, data: dict) -> dict:
+    # data is expected to be a dict with the profile update fields.
+    update_result = await users_collection.update_one(
+        {"email": user_email},
+        {"$set": data}
+    )
+    if update_result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="Profile update failed")
+    updated_user = await users_collection.find_one({"email": user_email})
+    return updated_user
+
+# New function: Identity Verification
+async def verify_identity(user_email: str, data: dict) -> dict:
+    # data is expected to be a dict with identity verification details
+    update_fields = {
+        "id_document": data.get("id_document"),
+        "selfie": data.get("selfie"),
+        "kyc_verified": True,
+    }
+    update_result = await users_collection.update_one(
+        {"email": user_email},
+        {"$set": update_fields}
+    )
+    if update_result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="Identity verification update failed")
+    updated_user = await users_collection.find_one({"email": user_email})
+    return updated_user
+
+# New function: Set PIN
+async def set_pin(user_email: str, pin: str) -> dict:
+    update_result = await users_collection.update_one(
+        {"email": user_email},
+        {"$set": {"pin": pin}}
+    )
+    if update_result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="Failed to set PIN")
+    updated_user = await users_collection.find_one({"email": user_email})
+    return updated_user
