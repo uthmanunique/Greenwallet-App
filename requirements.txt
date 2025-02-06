@@ -8,3 +8,4 @@ bcrypt
 passlib
 flask-cors
 email-validator
+motor
