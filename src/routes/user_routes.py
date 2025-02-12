@@ -1,4 +1,3 @@
-
 # src/routes/user_routes.py
 from fastapi import APIRouter, HTTPException, Depends
 from ..schemas.user_schemas import IdentityVerification, SetPIN, UserProfileUpdate, UserRegister, UserRegisterResponse
