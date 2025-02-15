@@ -22,6 +22,7 @@ origins = [
     "http://127.0.0.1:5000",      # ✅ Added 127.0.0.1 (important for local testing)
     "http://105.119.11.30:5000", # 
     os.getenv("FRONTEND_URL", ""), # ✅ Dynamic origin from .env
+    "*"                           # ✅ Allow all origins
 ]
 
 app.add_middleware(
