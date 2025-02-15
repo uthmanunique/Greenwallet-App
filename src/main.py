@@ -53,7 +53,7 @@ app = FastAPI(
 # Allow frontend to access API (CORS settings)
 origins = ["192.168.43.78:5000"
             # You can add additional origins as needed:
-            # "http://localhost:3000",
+            "http://localhost:5000",
             # "https://your-frontend-domain.com"
 ]           # Change this to specific domains in production
 app.add_middleware(
