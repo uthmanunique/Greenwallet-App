@@ -20,6 +20,7 @@ origins = [
     "http://192.168.43.78:5000",  # ✅ Corrected IP format
     "http://localhost:5000",      # ✅ Added missing comma
     "http://127.0.0.1:5000",      # ✅ Added 127.0.0.1 (important for local testing)
+    "http://105.119.11.30:5000", # 
     os.getenv("FRONTEND_URL", ""), # ✅ Dynamic origin from .env
 ]
 
