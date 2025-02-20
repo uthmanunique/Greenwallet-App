@@ -2,6 +2,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from bson import ObjectId
+from datetime import datetime
 
 class UserModel(BaseModel):
     id: Optional[str] = Field(default_factory=lambda: str(ObjectId()), alias="_id")
@@ -26,4 +27,5 @@ class UserModel(BaseModel):
     # New fields for identity verification
     id_document: Optional[str] = None  # URL or file path for ID document
     selfie: Optional[str] = None         # URL or file path for selfie
-    kyc_verified: bool = False           # Whether KYC has been completed
+    kyc_verified: bool = False   
+    kyc_verified_at: Optional[datetime] = None        # Whether KYC has been completed
