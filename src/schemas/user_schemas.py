@@ -1,8 +1,6 @@
-# filepath: /c:/Users/Baloun Uthman/Desktop/Greenwallet-backend/src/schemas/user_schemas.py
-from pydantic import BaseModel
-from fastapi import Form, File, UploadFile
 from pydantic import BaseModel, EmailStr
-
+from fastapi import Form, File, UploadFile
+from typing import Optional
 
 class UserRegister(BaseModel):
     first_name: str
@@ -25,14 +23,13 @@ class VerifyOTP(BaseModel):
     email: str
     otp: int
 
-# New schema for updating profile (profile update fields only)
+# Schema for updating profile (profile update fields only)
 class UserProfileUpdate(BaseModel):
     home_address: str
     country: str
     state: str
     city: str
-    # For simplicity, we assume the utility bill is sent as a string (e.g., a URL)
-    utility_bill: str
+    utility_bill: str  # e.g., a URL or file path
     date_of_birth: str
     gender: str
     occupation: str
@@ -60,12 +57,23 @@ class UserProfileUpdate(BaseModel):
             occupation=occupation
         )
 
-# New schema for identity verification
+# Define UserProfileResponse as a top-level schema
+class UserProfileResponse(BaseModel):
+    full_name: str
+    email: EmailStr
+    phone: str
+    home_address: Optional[str] = None
+    country: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
+    occupation: Optional[str] = None
+
+# Schema for identity verification
 class IdentityVerification(BaseModel):
-    # For simplicity, we expect the client to send file URLs or base64 strings.
-    # In a real application, you would handle file uploads and store them.
-    id_document: str  # URL or file path of the ID document
-    selfie: str       # URL or file path of the selfie
+    id_document: str  # URL or file path for the ID document
+    selfie: str       # URL or file path for the selfie
     document_type: str
 
     @classmethod
@@ -91,6 +99,11 @@ class SetPIN(BaseModel):
         pin: str = Form(...)
     ):
         return cls(pin=pin)
+
+# If needed, create a separate schema that includes email with PIN
+class SetPINWithEmail(BaseModel):
+    email: str
+    pin: str
 
     @classmethod
     def as_form(

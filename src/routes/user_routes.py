@@ -1,6 +1,10 @@
 # src/routes/user_routes.py
 from fastapi import APIRouter, HTTPException, Depends
-from ..schemas.user_schemas import IdentityVerification, SetPIN, UserProfileUpdate, UserRegister, UserRegisterResponse
+from ..schemas.user_schemas import (
+    IdentityVerification, SetPIN, UserProfileUpdate,
+    UserRegister, UserRegisterResponse, UserLogin, VerifyOTP, UserProfileResponse
+)
+
 from ..services.user_service import (
     register_user,
     verify_otp,
@@ -69,3 +73,15 @@ async def pin_setup(data: SetPIN, email: str = Depends(verify_jwt_token)):
 @router.get("/protected")
 async def protected_route(email: str = Depends(verify_jwt_token)):
     return {"message": f"Hello {email}, you are authorized!"}
+
+@router.get("/profile", response_model=UserProfileResponse)
+async def get_user_profile(email: str = Depends(verify_jwt_token)):
+    user = await get_user_by_email(email)  # You need to implement this function if not already done.
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+async def get_user_by_email(email: str):
+    user_data = await users_collection.find_one({"email": email})
+    if user_data:
+        return UserModel(**user_data)
+    return None
