@@ -11,3 +11,5 @@ db = client["greenwallet_db"]
 # Export the 'users' collection to be used in services
 users_collection = db["users"]  # This defines the collection name 'users'
 
+# Define the invoices collection:
+invoices_collection = db.invoices

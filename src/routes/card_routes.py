@@ -1,39 +1,17 @@
-from fastapi import HTTPException
-from schemas.card_schema import CardCreate, CardResponse
-from services.card_service import CardService
+from fastapi import APIRouter, HTTPException, Depends
+from ..schemas.card_schemas import VirtualCardCreate, VirtualCardResponse
+from ..services.card_services import create_virtual_card
+from ..utils.jwt_utils import verify_jwt_token  # Ensure this returns the user email from token
 
-class CardController:
-    def __init__(self):
-        self.card_service = CardService()
+router = APIRouter()
 
-    async def create_card(self, card: CardCreate) -> CardResponse:
-        try:
-            card_id = self.card_service.create_card(card.dict())
-            return CardResponse(success=True, message="Card created successfully", card={"id": card_id, **card.dict()})
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
-
-    async def list_cards(self) -> list[CardResponse]:
-        try:
-            cards = self.card_service.list_cards()
-            return [CardResponse(success=True, message="Card fetched successfully", card=card) for card in cards]
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
-
-    async def fund_card(self, card_id: str, amount: float) -> CardResponse:
-        try:
-            card = self.card_service.fund_card(card_id, amount)
-            if not card:
-                raise HTTPException(status_code=404, detail="Card not found")
-            return CardResponse(success=True, message="Card funded successfully", card=card)
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
-
-    async def delete_card(self, card_id: str) -> bool:
-        try:
-            result = self.card_service.delete_card(card_id)
-            if not result:
-                raise HTTPException(status_code=404, detail="Card not found")
-            return True
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+@router.post("/create", response_model=VirtualCardResponse)
+async def create_card_route(
+    card: VirtualCardCreate = Depends(VirtualCardCreate.as_form),
+    user_email: str = Depends(verify_jwt_token)
+):
+    try:
+        new_card = await create_virtual_card(user_email, card.dict())
+        return new_card
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
