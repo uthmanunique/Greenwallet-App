@@ -1,36 +1,38 @@
-import random
-import string
 import os
 import httpx
 from fastapi import HTTPException, status
-from datetime import datetime, timedelta
 from ..schemas.card_schemas import VirtualCardCreate, VirtualCardResponse
 
-# Flutterwave configuration (ensure you have these in your .env or config)
+# Flutterwave configuration
 FLUTTERWAVE_BASE_URL = "https://api.flutterwave.com/v3"
-FLUTTERWAVE_SECRET_KEY = os.getenv("FLUTTERWAVE_SECRET_KEY")
+FLUTTERWAVE_SECRET_KEY = os.getenv("FLUTTERWAVE_SECRET_KEY", "FLWSECK_TEST-7f3003c53642b43aa50741bdc34022ec-X")
 
 
-async def verify_bvn(bvn: str, first_name: str, last_name: str, phone: str) -> bool:
+# UfitPay configuration
+UFITPAY_BASE_URL = "https://api.ufitpay.com/v1"
+UFITPAY_API_KEY = os.getenv("UFITPAY_API_KEY")
+UFITPAY_API_TOKEN = os.getenv("UFITPAY_API_TOKEN")
+
+
+async def verify_bvn(bvn: str) -> bool:
     headers = {
         "Authorization": f"Bearer {FLUTTERWAVE_SECRET_KEY}",
         "Content-Type": "application/json"
     }
-    payload = {
-        "bvn": bvn,
-        "first_name": first_name,
-        "last_name": last_name,
-        "phone": phone
-    }
+    
     async with httpx.AsyncClient() as client:
-        response = await client.post(f"{FLUTTERWAVE_BASE_URL}/bvn/verify", json=payload, headers=headers)
-    print("BVN Verification Response:", response.status_code, response.text)
+        response = await client.get(f"{FLUTTERWAVE_BASE_URL}/kyc/bvns/{bvn}", headers=headers)
+    
+    print("BVN Verification Response:", response.status_code, response.text)  # Debugging
+
     if response.status_code == 200:
         data = response.json()
-        # Adjust these keys based on Flutterwave's actual response structure
-        if data.get("status") == "success" and data.get("data", {}).get("verified") is True:
+        # Adjust based on actual Flutterwave response structure
+        if data.get("status") == "success":
             return True
-    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="BVN verification failed")
+    
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"BVN verification failed: {response.text}")
+
 
 async def create_virtual_card(user_email: str, card_data: dict) -> VirtualCardResponse:
     bvn = card_data.get("bvn")
@@ -39,11 +41,9 @@ async def create_virtual_card(user_email: str, card_data: dict) -> VirtualCardRe
     last_name = card_data.get("last_name")
     phone = card_data.get("phone")
 
-    # First, verify the BVN via Flutterwave
-    is_verified = await verify_bvn(bvn, first_name, last_name, phone)
+    # First, verify the BVN via Flutterwave (now only passing the BVN)
+    is_verified = await verify_bvn(bvn)
     if not is_verified:
-        # The verify_bvn function now raises an HTTPException if verification fails.
-        # This line is just for clarity.
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="BVN verification failed")
 
     headers = {
@@ -55,7 +55,6 @@ async def create_virtual_card(user_email: str, card_data: dict) -> VirtualCardRe
         "user_email": user_email,
         "first_name": first_name,
         "last_name": last_name,
-        # Add any additional fields required by Flutterwave's virtual card API.
     }
     async with httpx.AsyncClient() as client:
         response = await client.post(f"{FLUTTERWAVE_BASE_URL}/virtual-cards", json=payload, headers=headers)

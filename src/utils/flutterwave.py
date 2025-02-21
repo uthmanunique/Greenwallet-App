@@ -3,7 +3,7 @@ import requests
 
 class Flutterwave:
     BASE_URL = "https://api.flutterwave.com/v3"
-    SECRET_KEY = "your_secret_key"  # Replace with your actual secret key
+    SECRET_KEY = "FLWSECK_TEST-7f3003c53642b43aa50741bdc34022ec-X"  # Replace with your actual secret key
 
     @classmethod
     def create_payment(cls, amount, currency, email, tx_ref):
